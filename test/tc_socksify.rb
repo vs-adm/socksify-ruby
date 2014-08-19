@@ -8,6 +8,14 @@ $:.unshift "#{File::dirname($0)}/../lib/"
 require 'socksify'
 require 'socksify/http'
 
+# XXX: Monkey patches
+module URI
+  class Generic
+    def empty?
+      self.to_s.empty?
+    end
+  end
+end
 
 class SocksifyTest < Test::Unit::TestCase
   def setup
@@ -20,11 +28,11 @@ class SocksifyTest < Test::Unit::TestCase
   end
   def enable_socks
     TCPSocket.socks_server = "127.0.0.1"
-    TCPSocket.socks_port = 9050
+    TCPSocket.socks_port = 9150
   end
 
   def http_tor_proxy
-    Net::HTTP::SOCKSProxy("127.0.0.1", 9050)
+    Net::HTTP::SOCKSProxy("127.0.0.1", 9150)
   end
 
   def test_check_tor
@@ -102,7 +110,7 @@ class SocksifyTest < Test::Unit::TestCase
     elsif body.include? 'You are not using Tor.'
       is_tor = false
     else
-      raise 'Bogus response'
+      raise "Bogus response #{body}"
     end
 
     if body =~ /Your IP address appears to be:\s*<strong>(\d+\.\d+\.\d+\.\d+)<\/strong>/
